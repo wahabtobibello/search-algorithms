@@ -15,12 +15,6 @@ class Node:
         node2.add_adjacent_node(node1)
 
 
-class TreeNode(Node):
-    def __init__(self, value, parent=None):
-        super().__init__(value)
-        self.parent = parent
-
-
 def depth_first_search(startNode, goal):
     visited, open_list = set(), [startNode]
     while len(open_list) > 0:
@@ -66,30 +60,49 @@ def breadth_first_search(startNode, goal):
 def bidirectional_search(startNode, goalNode):
     visited_for_root_search = set()
     visited_for_goal_search = set()
-    open_list_for_root_search = deque([startNode])
-    open_list_for_goal_search = deque([goalNode])
-    startNode.parent = None
-    goalNode.parent = None
+    open_list_for_root_search = deque([(startNode, [startNode])])
+    open_list_for_goal_search = deque([(goalNode, [goalNode])])
 
-    while True:
-        current_node_for_root_search = open_list_for_root_search.popleft()
-        current_node_for_goal_search = open_list_for_goal_search.popleft()
+    while len(open_list_for_root_search) > 0 and len(open_list_for_goal_search) > 0:
+        print
 
+        current_node_for_root_search, path_for_root_search = open_list_for_root_search.popleft()
+        current_node_for_goal_search, path_for_goal_search = open_list_for_goal_search.popleft()
+
+        node_children_for_root_search = current_node_for_root_search.adjacent_nodes - \
+            visited_for_root_search
         open_list_for_root_search.extend(
-            current_node_for_root_search.adjacent_nodes - visited_for_root_search)
+            [(child, path_for_root_search+[child]) for child in node_children_for_root_search])
         visited_for_root_search.add(current_node_for_root_search)
+
+        node_children_for_goal_search = current_node_for_goal_search.adjacent_nodes - \
+            visited_for_goal_search
         open_list_for_goal_search.extend(
-            current_node_for_goal_search.adjacent_nodes - visited_for_goal_search)
+            [(child, path_for_goal_search+[child]) for child in node_children_for_goal_search])
         visited_for_goal_search.add(current_node_for_goal_search)
 
         if visited_for_root_search & visited_for_goal_search:
             # return the path from root to goal
-            return True
+            return path_for_root_search + path_for_goal_search[-2::-1]
     return False
 
 
-def uniform_cost_search():
-    pass
+def uniform_cost_search(startNode, edge_costs, goal):
+    visited, open_list = set(), [(startNode, [startNode],  0)]
+    while len(open_list) > 0:
+        current_node, path, cost = open_list.pop()
+        if current_node.value == goal:
+            return path, cost
+
+        for node in current_node.adjacent_nodes - visited:
+            node_path = path[:]
+            node_path.append(node)
+            node_cost = edge_costs[(current_node, node)]
+            open_list.append((node, node_path, cost + node_cost))
+
+        open_list.sort(key=lambda key: key[2], reverse=True)
+        visited.add(current_node)
+    return False
 
 
 def initial_graph():
@@ -118,20 +131,20 @@ def initial_graph():
 
 
 def initial_graph_for_bidirectional_search():
-    A = TreeNode('A')
-    B = TreeNode('B')
-    C = TreeNode('C')
-    D = TreeNode('D')
-    E = TreeNode('E')
-    F = TreeNode('F')
-    G = TreeNode('G')
-    H = TreeNode('H')
-    I = TreeNode('I')
-    J = TreeNode('J')
-    K = TreeNode('K')
-    L = TreeNode('L')
-    M = TreeNode('M')
-    N = TreeNode('N')
+    A = Node('A')
+    B = Node('B')
+    C = Node('C')
+    D = Node('D')
+    E = Node('E')
+    F = Node('F')
+    G = Node('G')
+    H = Node('H')
+    I = Node('I')
+    J = Node('J')
+    K = Node('K')
+    L = Node('L')
+    M = Node('M')
+    N = Node('N')
     Node.connect_nodes(A, B)
     Node.connect_nodes(A, C)
     Node.connect_nodes(B, D)
@@ -151,14 +164,42 @@ def initial_graph_for_bidirectional_search():
     return A, N
 
 
+def initial_graph_for_uniform_cost_search():
+    A = Node('A')
+    B = Node('B')
+    C = Node('C')
+    D = Node('D')
+    E = Node('E')
+
+    Node.connect_nodes(A, B)
+    Node.connect_nodes(A, C)
+    Node.connect_nodes(A, D)
+    Node.connect_nodes(B, E)
+    Node.connect_nodes(C, E)
+    Node.connect_nodes(D, E)
+
+    edge_costs = {}
+    edge_costs[(A, B)] = 5
+    edge_costs[(A, C)] = 1
+    edge_costs[(A, D)] = 2
+    edge_costs[(B, E)] = 1
+    edge_costs[(C, E)] = 7
+    edge_costs[(D, E)] = 5
+    return A, edge_costs
+
+
 if __name__ == '__main__':
-    # root = initial_graph()
+    root = initial_graph()
     # output = depth_first_search(root, 'G')
     # output = depth_limited_search(root, 'G', 2)
     # output = iterative_deepening_search(root, 'G', 2)
     # output = breadth_first_search(root, 'G')
     # print(output.value) if output else print(output)
 
-    root, goalNode = initial_graph_for_bidirectional_search()
-    output_path = bidirectional_search(root, goalNode)
-    print(output_path)
+    # root, goalNode = initial_graph_for_bidirectional_search()
+    # output_path = bidirectional_search(root, goalNode)
+    # print([node.value for node in output_path])
+
+    # root, edge_costs = initial_graph_for_uniform_cost_search()
+    # output_path, cost = uniform_cost_search(root, edge_costs, 'E')
+    # print([node.value for node in output_path], cost)
