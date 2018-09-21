@@ -105,6 +105,30 @@ def uniform_cost_search(startNode, edge_costs, goal):
     return False
 
 
+def best_first_search():
+    pass
+
+
+def a_star_search():
+    pass
+
+
+def hill_climbing_search():
+    pass
+
+
+def simulated_annealing():
+    pass
+
+
+def tabu_search():
+    pass
+
+
+def grapth_coloring():
+    pass
+
+
 def initial_graph():
     A = Node('A')
     B = Node('B')
@@ -189,7 +213,7 @@ def initial_graph_for_uniform_cost_search():
 
 
 if __name__ == '__main__':
-    root = initial_graph()
+    # root = initial_graph()
     # output = depth_first_search(root, 'G')
     # output = depth_limited_search(root, 'G', 2)
     # output = iterative_deepening_search(root, 'G', 2)
