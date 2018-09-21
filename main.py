@@ -15,6 +15,12 @@ class Node:
         node2.add_adjacent_node(node1)
 
 
+class TreeNode(Node):
+    def __init__(self, value, parent=None):
+        super().__init__(value)
+        self.parent = parent
+
+
 def depth_first_search(startNode, goal):
     visited, open_list = set(), [startNode]
     while len(open_list) > 0:
@@ -49,7 +55,6 @@ def iterative_deepening_search(startNode, goal, max_depth):
 def breadth_first_search(startNode, goal):
     visited, open_list = set(), deque([startNode])
     while len(open_list) > 0:
-        print(list(node.value for node in open_list))
         current_node = open_list.popleft()
         if current_node.value == goal:
             return current_node
@@ -59,7 +64,28 @@ def breadth_first_search(startNode, goal):
 
 
 def bidirectional_search(startNode, goalNode):
-    pass
+    visited_for_root_search = set()
+    visited_for_goal_search = set()
+    open_list_for_root_search = deque([startNode])
+    open_list_for_goal_search = deque([goalNode])
+    startNode.parent = None
+    goalNode.parent = None
+
+    while True:
+        current_node_for_root_search = open_list_for_root_search.popleft()
+        current_node_for_goal_search = open_list_for_goal_search.popleft()
+
+        open_list_for_root_search.extend(
+            current_node_for_root_search.adjacent_nodes - visited_for_root_search)
+        visited_for_root_search.add(current_node_for_root_search)
+        open_list_for_goal_search.extend(
+            current_node_for_goal_search.adjacent_nodes - visited_for_goal_search)
+        visited_for_goal_search.add(current_node_for_goal_search)
+
+        if visited_for_root_search & visited_for_goal_search:
+            # return the path from root to goal
+            return True
+    return False
 
 
 def uniform_cost_search():
@@ -91,11 +117,48 @@ def initial_graph():
     return A
 
 
-# root = initial_graph()
+def initial_graph_for_bidirectional_search():
+    A = TreeNode('A')
+    B = TreeNode('B')
+    C = TreeNode('C')
+    D = TreeNode('D')
+    E = TreeNode('E')
+    F = TreeNode('F')
+    G = TreeNode('G')
+    H = TreeNode('H')
+    I = TreeNode('I')
+    J = TreeNode('J')
+    K = TreeNode('K')
+    L = TreeNode('L')
+    M = TreeNode('M')
+    N = TreeNode('N')
+    Node.connect_nodes(A, B)
+    Node.connect_nodes(A, C)
+    Node.connect_nodes(B, D)
+    Node.connect_nodes(B, E)
+    Node.connect_nodes(C, F)
+    Node.connect_nodes(D, G)
+    Node.connect_nodes(E, H)
+    Node.connect_nodes(F, H)
+    Node.connect_nodes(G, I)
+    Node.connect_nodes(H, J)
+    Node.connect_nodes(H, K)
+    Node.connect_nodes(I, L)
+    Node.connect_nodes(J, L)
+    Node.connect_nodes(K, M)
+    Node.connect_nodes(L, N)
+    Node.connect_nodes(M, N)
+    return A, N
 
-# output = depth_first_search(root, 'G')
-# output = depth_limited_search(root, 'G', 2)
-# output = iterative_deepening_search(root, 'G', 2)
-# output = breadth_first_search(root, 'G')
 
-# print(output.value) if output else print(output)
+if __name__ == '__main__':
+    # root = initial_graph()
+    # output = depth_first_search(root, 'G')
+    # output = depth_limited_search(root, 'G', 2)
+    # output = iterative_deepening_search(root, 'G', 2)
+    # output = breadth_first_search(root, 'G')
+    # print(output.value) if output else print(output)
+
+    root, goalNode = initial_graph_for_bidirectional_search()
+    output_path = bidirectional_search(root, goalNode)
+    print(output_path)
